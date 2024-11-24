@@ -1,32 +1,31 @@
 const express = require("express");
 const app = express();
+const employeesRouter = require("./employeesRouter");
 const PORT = 3000;
 
+// Middleware to parse JSON
+app.use(express.json());
+
+// Home route
 app.get("/", (req, res) => {
   res.send("Hello employees!");
 });
 
-const employees = require("./employees");
+// Use employees router
+app.use("/employees", employeesRouter);
 
-app.get("/employees", (req, res) => {
-  res.json(employees);
+// 404 middleware
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found." });
 });
 
-app.get("/employees/random", (req, res) => {
-  const i = Math.floor(Math.random() * employees.length);
-  res.json(employees[i]);
+// Error-handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong." });
 });
 
-app.get("/employees/:id", (req, res) => {
-  const { id } = req.params;
-  const employee = employees.find((e) => e.id === +id);
-  if (employee) {
-    res.json(employee);
-  } else {
-    res.status(404).send(`There is no employee with id ${id}.`);
-  }
-});
-
+// Start server
 app.listen(PORT, () => {
-  `Listening on port ${PORT}...`;
+  console.log(`Listening on port ${PORT}...`);
 });
